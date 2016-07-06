@@ -1,0 +1,9 @@
+{
+  "name": "Robinhood to CSV",
+  "description": "Export your Robinhood trades to a CSV file",
+  "repository": "https://github.com/joshfraser/robinhood-to-csv",
+  "website": "http://www.onlineaspect.com/2015/12/17/export-robinhood-investments-to-csv/",
+  "logo": "https://d2ue93q3u507c2.cloudfront.net/assets/robinhood/images/logo.png",
+  "keywords": ["robinhood", "csv", "trades", "exporter"],
+  "image": "heroku/python"
+}
