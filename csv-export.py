@@ -100,13 +100,13 @@ csv = ','.join(keys)+"\n"
 # CSV rows
 for row in fields:
 	for idx, key in enumerate(keys):
+		if(idx > 0):
+			csv += ","
 		try:
 			csv += str(fields[row][key])
 		except:
 			csv += ""
-		
-		if(idx > 0):
-			csv += ","
+
 	csv += "\n"
 
 # choose a filename to save to
