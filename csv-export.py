@@ -99,10 +99,13 @@ csv = ','.join(keys)+"\n"
 
 # CSV rows
 for row in fields:
-	for key in keys:
+	for idx, key in enumerate(keys):
 		try:
-			csv += str(fields[row][key]) + ","
+			csv += str(fields[row][key])
 		except:
+			csv += ""
+		
+		if(idx > 0):
 			csv += ","
 	csv += "\n"
 
