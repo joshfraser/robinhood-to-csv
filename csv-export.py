@@ -99,11 +99,14 @@ csv = ','.join(keys)+"\n"
 
 # CSV rows
 for row in fields:
-	for key in keys:
-		try:
-			csv += str(fields[row][key]) + ","
-		except:
+	for idx, key in enumerate(keys):
+		if(idx > 0):
 			csv += ","
+		try:
+			csv += str(fields[row][key])
+		except:
+			csv += ""
+
 	csv += "\n"
 
 # choose a filename to save to
