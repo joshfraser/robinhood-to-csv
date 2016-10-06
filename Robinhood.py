@@ -66,7 +66,8 @@ class Robinhood:
     def login(self, username, password):
         self.username = username
         self.password = password
-        data = "password=%s&username=%s" % (self.password, self.username)
+        fields = { 'password' : self.password, 'username' : self.username}
+        data = urllib.urlencode(fields)
         res = self.session.post(self.endpoints['login'], data=data)
         res = res.json()
         try:
