@@ -9,3 +9,7 @@ pip install -r requirements.txt
 
 #### Run:
 python csv-export.py
+
+#### Options:
+If you use the profit parameter it will calculate a profit and tax amount (default 25%) per sale event based on the previous sales.
+python csv-export.py --profit
