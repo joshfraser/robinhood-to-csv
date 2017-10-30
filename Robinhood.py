@@ -10,29 +10,29 @@ except ImportError:
 class Robinhood:
 
     endpoints = {
-            "accounts":"https://api.robinhood.com/accounts/",
-            "ach_iav_auth":"https://api.robinhood.com/ach/iav/auth/",
-            "ach_relationships":"https://api.robinhood.com/ach/relationships/",
-            "ach_transfers":"https://api.robinhood.com/ach/transfers/",
-            "applications":"https://api.robinhood.com/applications/",
-            "dividends":"https://api.robinhood.com/dividends/",
-            "document_requests":"https://api.robinhood.com/upload/document_requests/",
-            "edocuments":"https://api.robinhood.com/documents/",
-            "employment":"https://api.robinhood.com/user/employment",
-            "instruments":"https://api.robinhood.com/instruments/",
-            "investment_profile": "https://api.robinhood.com/user/investment_profile/",
-            "login": "https://api.robinhood.com/api-token-auth/",
-            "margin_upgrades":"https://api.robinhood.com/margin/upgrades/",
-            "markets":"https://api.robinhood.com/markets/", 
-            "notification_settings":"https://api.robinhood.com/settings/notifications/",
-            "notifications":"https://api.robinhood.com/notifications/",
-            "orders":"https://api.robinhood.com/orders/",
-            "password_reset":"https://api.robinhood.com/password_reset/request/",
-            "portfolios":"https://api.robinhood.com/portfolios/",
-            "positions":"https://api.robinhood.com/positions/",
-            "quotes":"https://api.robinhood.com/quotes/",
-            "user":"https://api.robinhood.com/user/",
-            "watchlists":"https://api.robinhood.com/watchlists/"
+        "accounts": "https://api.robinhood.com/accounts/",
+        "ach_iav_auth": "https://api.robinhood.com/ach/iav/auth/",
+        "ach_relationships": "https://api.robinhood.com/ach/relationships/",
+        "ach_transfers": "https://api.robinhood.com/ach/transfers/",
+        "applications": "https://api.robinhood.com/applications/",
+        "document_requests": "https://api.robinhood.com/upload/document_requests/",
+        "dividends": "https://api.robinhood.com/dividends/",
+        "edocuments": "https://api.robinhood.com/documents/",
+        "employment": "https://api.robinhood.com/user/employment",
+        "investment_profile":  "https://api.robinhood.com/user/investment_profile/",
+        "instruments": "https://api.robinhood.com/instruments/",
+        "login":  "https://api.robinhood.com/api-token-auth/",
+        "margin_upgrades": "https://api.robinhood.com/margin/upgrades/",
+        "markets": "https://api.robinhood.com/markets/",
+        "notification_settings": "https://api.robinhood.com/settings/notifications/",
+        "notifications": "https://api.robinhood.com/notifications/",
+        "orders": "https://api.robinhood.com/orders/",
+        "password_reset": "https://api.robinhood.com/password_reset/request/",
+        "portfolios": "https://api.robinhood.com/portfolios/",
+        "positions": "https://api.robinhood.com/positions/",
+        "quotes": "https://api.robinhood.com/quotes/",
+        "user": "https://api.robinhood.com/user/",
+        "watchlists": "https://api.robinhood.com/watchlists/"
     }
 
     session = None
@@ -63,10 +63,14 @@ class Robinhood:
         }
         self.session.headers = self.headers
 
-    def login(self, username, password):
+    def login(self, username, password, mfa_code=None):
         self.username = username
         self.password = password
-        fields = { 'password' : self.password, 'username' : self.username}
+        self.mfa_code = mfa_code
+        if mfa_code:
+            fields = { 'password' : self.password, 'username' : self.username, 'mfa_code': self.mfa_code }
+        else: 
+            fields = { 'password' : self.password, 'username' : self.username }
         try:
             data = urllib.urlencode(fields) #py2
         except:
@@ -76,7 +80,7 @@ class Robinhood:
         try:
             self.auth_token = res['token']
         except KeyError:
-            return False
+            return res
         self.headers['Authorization'] = 'Token '+self.auth_token
         return True
 
