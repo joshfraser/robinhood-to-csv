@@ -8,7 +8,7 @@ except ImportError:
     from urllib import urlretrieve  # py2
 
 class Robinhood:
-    """wrapper class for fetching/parsing Robinhood endpoints"""
+
     endpoints = {
         "accounts": "https://api.robinhood.com/accounts/",
         "ach_iav_auth": "https://api.robinhood.com/ach/iav/auth/",
@@ -80,7 +80,7 @@ class Robinhood:
         try:
             self.auth_token = res['token']
         except KeyError:
-            return False
+            return res
         self.headers['Authorization'] = 'Token '+self.auth_token
         return True
 

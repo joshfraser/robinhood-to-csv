@@ -10,7 +10,6 @@ logged_in = False
 # hard code your credentials here to avoid entering them each time you run the script
 username = ""
 password = ""
-mfa_code = ""
 
 parser = argparse.ArgumentParser(
     description='Export Robinhood trades to a CSV file')
@@ -21,7 +20,7 @@ parser.add_argument(
 parser.add_argument(
     '--password', default=password, help='your Robinhood password')
 parser.add_argument(
-    '--mfa_code', default=mfa_code, help='your Robinhood mfa_code')
+    '--mfa_code', help='your Robinhood mfa_code')
 parser.add_argument(
     '--profit', action='store_true', help='calculate profit for each sale')
 args = parser.parse_args()
@@ -32,7 +31,7 @@ mfa_code = args.mfa_code
 robinhood = Robinhood()
 
 # login to Robinhood
-while not logged_in:
+while logged_in != True:
     if username == "":
         print("Robinhood username:", end=' ')
         try:
@@ -44,9 +43,8 @@ while not logged_in:
         password = getpass.getpass()
 
     logged_in = robinhood.login(username=username, password=password)
-    if logged_in == False:
-        if mfa_code == "":
-            print("Robinhood MFA:", end=' ')
+    if logged_in != True and logged_in.get('non_field_errors') == None and logged_in['mfa_required'] == True:
+        print("Robinhood MFA:", end=' ')
         try:
             input = raw_input
         except NameError:
@@ -54,11 +52,11 @@ while not logged_in:
         mfa_code = input()
         logged_in = robinhood.login(username=username, password=password, mfa_code=mfa_code)
         
-        if logged_in == False:
-            password = ""
-            print("Invalid username or password.  Try again.\n")
-        else: 
-            print("Pulling trades. Please wait...")
+    if logged_in != True:
+        password = ""
+        print("Invalid username or password.  Try again.\n")
+
+print("Pulling trades. Please wait...")
 
 fields = collections.defaultdict(dict)
 trade_count = 0
