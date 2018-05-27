@@ -1,3 +1,4 @@
+from __future__ import print_function
 from Robinhood import Robinhood
 from profit_extractor import profit_extractor
 import getpass
