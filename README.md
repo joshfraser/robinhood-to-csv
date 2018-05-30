@@ -10,7 +10,9 @@ pip install -r requirements.txt
 #### Run:
 
 For exporting stock trades, run:
+
 `python csv-export.py`
 
 For exporting options trades, run:
+
 `python csv-options-export.py`
