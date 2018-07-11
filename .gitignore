@@ -61,4 +61,6 @@ target/
 
 # private user info
 .env*
+!.env.example
+
 robinhood.csv
