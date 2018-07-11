@@ -1,2 +1,2 @@
 requests
-pandas
+pandas>=0.17.0
