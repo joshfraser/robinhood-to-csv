@@ -5,7 +5,7 @@ import getpass
 import collections
 import argparse
 import ast
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 import os
 
 logged_in = False
@@ -27,7 +27,7 @@ username = args.username
 password = args.password
 mfa_code = args.mfa_code
 
-load_dotenv()
+load_dotenv(find_dotenv())
 
 robinhood = Robinhood()
 
@@ -45,15 +45,14 @@ while logged_in != True:
         username = input()
 
     if password == "":
-        password os.getenv("RH_PASSWORD")
+        password = os.getenv("RH_PASSWORD")
     if password == "":
         password = getpass.getpass()
 
     logged_in = robinhood.login(username=username, password=password)
     if logged_in != True and logged_in.get('non_field_errors') == None and logged_in['mfa_required'] == True:
-        if os.getenv("RH_MFA"):
-            mfa_code = os.getenv("RH_MFA")
-        else:
+        mfa_code = os.getenv("RH_MFA")
+        if mfa_code == "":
             print("Robinhood MFA:", end=' ')
             try:
                 input = raw_input

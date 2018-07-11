@@ -4,7 +4,7 @@ import getpass
 import collections
 import argparse
 import ast
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 import os
 
 logged_in = False
@@ -26,7 +26,7 @@ username = args.username
 password = args.password
 mfa_code = args.mfa_code
 
-load_dotenv()
+load_dotenv(find_dotenv())
 
 robinhood = Robinhood()
 
@@ -44,7 +44,7 @@ while logged_in != True:
         username = input()
 
     if password == "":
-        password os.getenv("RH_PASSWORD")
+        password = os.getenv("RH_PASSWORD")
     if password == "":
         password = getpass.getpass()
 
@@ -59,7 +59,7 @@ while logged_in != True:
                 pass
             mfa_code = input()
         logged_in = robinhood.login(username=username, password=password, mfa_code=mfa_code)
-        
+
     if logged_in != True:
         password = ""
         print("Invalid username or password.  Try again.\n")
@@ -94,7 +94,7 @@ try:
 except IOError:
     print("Oops.  Unable to write options file to ", filename)
 #Vignesh end
-    
+
 # do/while for pagination
 paginated = True
 page = 0
@@ -126,10 +126,10 @@ while paginated:
             elif order['state'] == "queued":
                 queued_count += 1
             #Add a calculation for the amount this trade will have effected on the buying power, this will help calculate total profit.
-            if leg['side'] == 'sell': 
+            if leg['side'] == 'sell':
                 fields[counter]['Change_in_Buying_Power'] = order['processed_premium']
             else:
-                fields[counter]['Change_in_Buying_Power'] = "-" + (order['processed_premium']);     
+                fields[counter]['Change_in_Buying_Power'] = "-" + (order['processed_premium']);
             row += 1
     # paginate
     if orders['next'] is not None:
