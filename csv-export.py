@@ -91,7 +91,7 @@ while paginated:
         for key, value in enumerate(order):
             if value != "executions":
                 fields[i + (page * 100)][value] = order[value]
-        if order['state'] == "filled":
+        if len(executions) > 0:
             trade_count += 1
             for key, value in enumerate(executions[0]):
                 fields[i + (page * 100)][value] = executions[0][value]
