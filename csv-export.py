@@ -91,10 +91,15 @@ while paginated:
         for key, value in enumerate(order):
             if value != "executions":
                 fields[i + (page * 100)][value] = order[value]
+
+        fields[i + (page * 100)]['num_of_executions'] = len(executions)
+        fields[i + (page * 100)]['execution_state'] = order['state']
+
         if len(executions) > 0:
             trade_count += 1
-            for key, value in enumerate(executions[0]):
-                fields[i + (page * 100)][value] = executions[0][value]
+            fields[i + (page * 100)]['execution_state'] = ("completed", "partially filled")[order['cumulative_quantity'] < order['quantity']]
+            fields[i + (page * 100)]['first_execution_at'] = executions[0]['timestamp']
+            fields[i + (page * 100)]['settlement_date'] = executions[0]['settlement_date']
         elif order['state'] == "queued":
             queued_count += 1
     # paginate
