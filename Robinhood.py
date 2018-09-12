@@ -22,6 +22,7 @@ class Robinhood:
         "investment_profile":  "https://api.robinhood.com/user/investment_profile/",
         "instruments": "https://api.robinhood.com/instruments/",
         "login":  "https://api.robinhood.com/api-token-auth/",
+        "oauth2":  "https://api.robinhood.com/oauth2/token/",
         "margin_upgrades": "https://api.robinhood.com/margin/upgrades/",
         "markets": "https://api.robinhood.com/markets/",
         "notification_settings": "https://api.robinhood.com/settings/notifications/",
@@ -42,6 +43,7 @@ class Robinhood:
     password = None
     headers = None
     auth_token = None
+    oauth_token = None
     positions = None
 
     ##############################
@@ -72,18 +74,25 @@ class Robinhood:
         if mfa_code:
             fields = { 'password' : self.password, 'username' : self.username, 'mfa_code': self.mfa_code }
         else: 
-            fields = { 'password' : self.password, 'username' : self.username }
+            fields = {
+                'password' : self.password,
+                'username' : self.username,
+                'client_id': 'c82SH0WZOsabOXGP2sxqcj34FxkvfnWRZBKlBjFS',
+                'expires_in': '86400',
+                'grant_type': 'password',
+                'scope': 'internal'
+            }
         try:
             data = urllib.urlencode(fields) #py2
         except:
             data = urllib.parse.urlencode(fields) #py3
-        res = self.session.post(self.endpoints['login'], data=data)
+        res = self.session.post(self.endpoints['oauth2'], data=data)
         res = res.json()
         try:
-            self.auth_token = res['token']
+            self.oauth_token = res['access_token']
         except KeyError:
             return res
-        self.headers['Authorization'] = 'Token '+self.auth_token
+        self.headers['Authorization'] = 'Bearer '+self.oauth_token
         return True
 
     ##############################
