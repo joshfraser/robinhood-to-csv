@@ -21,7 +21,7 @@ class Robinhood:
         "employment": "https://api.robinhood.com/user/employment",
         "investment_profile":  "https://api.robinhood.com/user/investment_profile/",
         "instruments": "https://api.robinhood.com/instruments/",
-        "login":  "https://api.robinhood.com/api-token-auth/",
+        "login":  "https://api.robinhood.com/oauth2/token/",
         "margin_upgrades": "https://api.robinhood.com/margin/upgrades/",
         "markets": "https://api.robinhood.com/markets/",
         "notification_settings": "https://api.robinhood.com/settings/notifications/",
@@ -43,6 +43,7 @@ class Robinhood:
     headers = None
     auth_token = None
     positions = None
+    client_id = "c82SH0WZOsabOXGP2sxqcj34FxkvfnWRZBKlBjFS"
 
     ##############################
     #Logging in and initializing
@@ -70,9 +71,20 @@ class Robinhood:
         self.password = password
         self.mfa_code = mfa_code
         if mfa_code:
-            fields = { 'password' : self.password, 'username' : self.username, 'mfa_code': self.mfa_code }
+            fields = {
+                'password' : self.password,
+                'username' : self.username,
+                'mfa_code': self.mfa_code,
+                'grant_type': 'password',
+                'client_id': self.client_id
+            }
         else: 
-            fields = { 'password' : self.password, 'username' : self.username }
+            fields = {
+                'password' : self.password,
+                'username' : self.username,
+                'grant_type': 'password',
+                'client_id': self.client_id
+            }
         try:
             data = urllib.urlencode(fields) #py2
         except:
@@ -80,10 +92,10 @@ class Robinhood:
         res = self.session.post(self.endpoints['login'], data=data)
         res = res.json()
         try:
-            self.auth_token = res['token']
+            self.auth_token = res['access_token']
         except KeyError:
             return res
-        self.headers['Authorization'] = 'Token '+self.auth_token
+        self.headers['Authorization'] = 'Bearer ' + self.auth_token
         return True
 
     ##############################
