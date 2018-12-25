@@ -20,8 +20,8 @@ def profit_extractor(csv_val,  filename):
     handle_raw = pd.read_csv(filename)
     handle = handle_raw.copy()
     # convert date to date item and sort from oldest to newest
-    handle['timestamp'] = pd.to_datetime(handle.timestamp)
-    handle = handle.sort_values('timestamp')
+    handle['last_transaction_at'] = pd.to_datetime(handle.last_transaction_at)
+    handle = handle.sort_values('last_transaction_at')
     handle['processed'] = 0
     handle['used'] = False
     handle['Profit'] = 0
@@ -34,7 +34,7 @@ def profit_extractor(csv_val,  filename):
     for index, row in handle.iterrows():
         if row.state == 'filled' and row.side == 'sell':
             previous_buys = handle.loc[(handle['symbol'] == row.symbol) &
-                                       (handle['timestamp'] <= row['timestamp']) &
+                                       (handle['last_transaction_at'] <= row['last_transaction_at']) &
                                        (handle['state'] == 'filled') &
                                        (handle['side'] == 'buy') &
                                        (handle['used'] == False)
@@ -52,8 +52,8 @@ def profit_extractor(csv_val,  filename):
             # Additionally, the timing for long-term keeps on counting on those shares
             # this implementation only covers single wash sales and adds the disallowed loss in a new column 'Wash Sale'
             ws_buys = handle.loc[(handle['symbol'] == row.symbol) &
-                                 (handle['timestamp'] >= row['timestamp']) &
-                                 (handle['timestamp'] <= row['timestamp'] + timedelta(days=30)) &
+                                 (handle['last_transaction_at'] >= row['last_transaction_at']) &
+                                 (handle['last_transaction_at'] <= row['last_transaction_at'] + timedelta(days=30)) &
                                  (handle['state'] == 'filled') &
                                  (handle['side'] == 'buy') &
                                  (handle['used'] == False)

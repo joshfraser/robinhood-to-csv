@@ -109,7 +109,7 @@ while paginated:
 # 	print "-------"
 
 # check we have trade data to export
-if trade_count > 0 or queded_count > 0:
+if trade_count > 0 or queued_count > 0:
     print("%d queued trade%s and %d executed trade%s found in your account." %
           (queued_count, "s" [queued_count == 1:], trade_count,
            "s" [trade_count == 1:]))
