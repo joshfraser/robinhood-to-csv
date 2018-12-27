@@ -5,21 +5,19 @@ import getpass
 import collections
 import argparse
 import ast
+from dotenv import load_dotenv, find_dotenv
+import os
 
 logged_in = False
-
-# hard code your credentials here to avoid entering them each time you run the script
-username = ""
-password = ""
 
 parser = argparse.ArgumentParser(
     description='Export Robinhood trades to a CSV file')
 parser.add_argument(
     '--debug', action='store_true', help='store raw JSON output to debug.json')
 parser.add_argument(
-    '--username', default=username, help='your Robinhood username')
+    '--username', default='', help='your Robinhood username')
 parser.add_argument(
-    '--password', default=password, help='your Robinhood password')
+    '--password', default='', help='your Robinhood password')
 parser.add_argument(
     '--mfa_code', help='your Robinhood mfa_code')
 parser.add_argument(
@@ -29,10 +27,15 @@ username = args.username
 password = args.password
 mfa_code = args.mfa_code
 
+load_dotenv(find_dotenv())
+
 robinhood = Robinhood()
 
 # login to Robinhood
 while logged_in != True:
+
+    if username == "":
+        username = os.getenv("RH_USERNAME")
     if username == "":
         print("Robinhood username:", end=' ')
         try:
@@ -40,17 +43,22 @@ while logged_in != True:
         except NameError:
             pass
         username = input()
+
+    if password == "":
+        password = os.getenv("RH_PASSWORD")
     if password == "":
         password = getpass.getpass()
 
     logged_in = robinhood.login(username=username, password=password)
     if logged_in != True and logged_in.get('non_field_errors') == None and logged_in['mfa_required'] == True:
-        print("Robinhood MFA:", end=' ')
-        try:
-            input = raw_input
-        except NameError:
-            pass
-        mfa_code = input()
+        mfa_code = os.getenv("RH_MFA")
+        if mfa_code == "":
+            print("Robinhood MFA:", end=' ')
+            try:
+                input = raw_input
+            except NameError:
+                pass
+            mfa_code = input()
         logged_in = robinhood.login(username=username, password=password, mfa_code=mfa_code)
 
     if logged_in != True:

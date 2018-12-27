@@ -1,2 +1,3 @@
 requests
 pandas
+python-dotenv>=0.8.2
