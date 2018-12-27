@@ -52,7 +52,7 @@ while logged_in != True:
             pass
         mfa_code = input()
         logged_in = robinhood.login(username=username, password=password, mfa_code=mfa_code)
-        
+
     if logged_in != True:
         password = ""
         print("Invalid username or password.  Try again.\n")
@@ -62,6 +62,9 @@ print("Pulling trades. Please wait...")
 fields = collections.defaultdict(dict)
 trade_count = 0
 queued_count = 0
+
+#holds instrument['symbols'] to reduce API ovehead {instrument_url:symbol}
+cached_instruments = {}
 
 # fetch order history and related metadata from the Robinhood API
 orders = robinhood.get_endpoint('orders')
@@ -86,8 +89,14 @@ page = 0
 while paginated:
     for i, order in enumerate(orders['results']):
         executions = order['executions']
-        instrument = robinhood.get_custom_endpoint(order['instrument'])
-        fields[i + (page * 100)]['symbol'] = instrument['symbol']
+
+        symbol = cached_instruments.get(order['instrument'], False)
+        if not symbol:
+            symbol = robinhood.get_custom_endpoint(order['instrument'])['symbol']
+            cached_instruments[order['instrument']] = symbol
+
+        fields[i + (page * 100)]['symbol'] = symbol
+
         for key, value in enumerate(order):
             if value != "executions":
                 fields[i + (page * 100)][value] = order[value]
