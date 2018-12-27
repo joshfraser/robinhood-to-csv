@@ -58,3 +58,9 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# private user info
+.env*
+!.env.example
+
+robinhood.csv

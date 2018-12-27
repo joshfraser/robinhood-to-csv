@@ -5,21 +5,19 @@ import getpass
 import collections
 import argparse
 import ast
+from dotenv import load_dotenv, find_dotenv
+import os
 
 logged_in = False
-
-# hard code your credentials here to avoid entering them each time you run the script
-username = ""
-password = ""
 
 parser = argparse.ArgumentParser(
     description='Export Robinhood trades to a CSV file')
 parser.add_argument(
     '--debug', action='store_true', help='store raw JSON output to debug.json')
 parser.add_argument(
-    '--username', default=username, help='your Robinhood username')
+    '--username', default='', help='your Robinhood username')
 parser.add_argument(
-    '--password', default=password, help='your Robinhood password')
+    '--password', default='', help='your Robinhood password')
 parser.add_argument(
     '--mfa_code', help='your Robinhood mfa_code')
 parser.add_argument(
@@ -29,10 +27,15 @@ username = args.username
 password = args.password
 mfa_code = args.mfa_code
 
+load_dotenv(find_dotenv())
+
 robinhood = Robinhood()
 
 # login to Robinhood
 while logged_in != True:
+
+    if username == "":
+        username = os.getenv("RH_USERNAME")
     if username == "":
         print("Robinhood username:", end=' ')
         try:
@@ -40,19 +43,24 @@ while logged_in != True:
         except NameError:
             pass
         username = input()
+
+    if password == "":
+        password = os.getenv("RH_PASSWORD")
     if password == "":
         password = getpass.getpass()
 
     logged_in = robinhood.login(username=username, password=password)
     if logged_in != True and logged_in.get('non_field_errors') == None and logged_in['mfa_required'] == True:
-        print("Robinhood MFA:", end=' ')
-        try:
-            input = raw_input
-        except NameError:
-            pass
-        mfa_code = input()
+        mfa_code = os.getenv("RH_MFA")
+        if mfa_code == "":
+            print("Robinhood MFA:", end=' ')
+            try:
+                input = raw_input
+            except NameError:
+                pass
+            mfa_code = input()
         logged_in = robinhood.login(username=username, password=password, mfa_code=mfa_code)
-        
+
     if logged_in != True:
         password = ""
         print("Invalid username or password.  Try again.\n")
@@ -62,6 +70,9 @@ print("Pulling trades. Please wait...")
 fields = collections.defaultdict(dict)
 trade_count = 0
 queued_count = 0
+
+#holds instrument['symbols'] to reduce API ovehead {instrument_url:symbol}
+cached_instruments = {}
 
 # fetch order history and related metadata from the Robinhood API
 orders = robinhood.get_endpoint('orders')
@@ -86,15 +97,26 @@ page = 0
 while paginated:
     for i, order in enumerate(orders['results']):
         executions = order['executions']
-        instrument = robinhood.get_custom_endpoint(order['instrument'])
-        fields[i + (page * 100)]['symbol'] = instrument['symbol']
+
+        symbol = cached_instruments.get(order['instrument'], False)
+        if not symbol:
+            symbol = robinhood.get_custom_endpoint(order['instrument'])['symbol']
+            cached_instruments[order['instrument']] = symbol
+
+        fields[i + (page * 100)]['symbol'] = symbol
+
         for key, value in enumerate(order):
             if value != "executions":
                 fields[i + (page * 100)][value] = order[value]
-        if order['state'] == "filled":
+
+        fields[i + (page * 100)]['num_of_executions'] = len(executions)
+        fields[i + (page * 100)]['execution_state'] = order['state']
+
+        if len(executions) > 0:
             trade_count += 1
-            for key, value in enumerate(executions[0]):
-                fields[i + (page * 100)][value] = executions[0][value]
+            fields[i + (page * 100)]['execution_state'] = ("completed", "partially filled")[order['cumulative_quantity'] < order['quantity']]
+            fields[i + (page * 100)]['first_execution_at'] = executions[0]['timestamp']
+            fields[i + (page * 100)]['settlement_date'] = executions[0]['settlement_date']
         elif order['state'] == "queued":
             queued_count += 1
     # paginate
