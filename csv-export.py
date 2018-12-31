@@ -51,7 +51,10 @@ while logged_in != True:
 
     logged_in = robinhood.login(username=username, password=password)
     if logged_in != True and logged_in.get('non_field_errors') == None and logged_in['mfa_required'] == True:
-        mfa_code = os.getenv("RH_MFA")
+
+        if mfa_code is None:
+            mfa_code = os.getenv("RH_MFA")
+
         if mfa_code == "":
             print("Robinhood MFA:", end=' ')
             try:
