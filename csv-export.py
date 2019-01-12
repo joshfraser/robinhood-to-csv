@@ -35,7 +35,7 @@ robinhood = Robinhood()
 while logged_in != True:
 
     if username == "":
-        username = os.getenv("RH_USERNAME")
+        username = os.getenv("RH_USERNAME", "")
     if username == "":
         print("Robinhood username:", end=' ')
         try:
@@ -45,7 +45,7 @@ while logged_in != True:
         username = input()
 
     if password == "":
-        password = os.getenv("RH_PASSWORD")
+        password = os.getenv("RH_PASSWORD", "")
     if password == "":
         password = getpass.getpass()
 
