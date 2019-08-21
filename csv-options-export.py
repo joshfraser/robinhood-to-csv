@@ -1,3 +1,4 @@
+from __future__ import print_function
 from Robinhood import Robinhood
 from profit_extractor import profit_extractor
 import getpass
@@ -34,7 +35,7 @@ robinhood = Robinhood()
 while logged_in != True:
 
     if username == "":
-        username = os.getenv("RH_USERNAME")
+        username = os.getenv("RH_USERNAME", "")
     if username == "":
         print("Robinhood username:", end=' ')
         try:
@@ -44,12 +45,12 @@ while logged_in != True:
         username = input()
 
     if password == "":
-        password = os.getenv("RH_PASSWORD")
+        password = os.getenv("RH_PASSWORD", "")
     if password == "":
         password = getpass.getpass()
 
     logged_in = robinhood.login(username=username, password=password)
-    if logged_in != True and logged_in.get('non_field_errors') == None and logged_in['mfa_required'] == True:
+    if logged_in != True and logged_in.get('non_field_errors') == None and logged_in.get('mfa_required') == True:
         mfa_code = os.getenv("RH_MFA")
         if mfa_code == "":
             print("Robinhood MFA:", end=' ')
