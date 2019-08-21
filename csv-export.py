@@ -172,6 +172,12 @@ filename = input().strip()
 if filename == '':
     filename = "robinhood.csv"
 
+try:
+    with open(filename, "w+") as outfile:
+        otufile.write(csv)
+except IOError:
+    print("Oops.  Unable to write file to ", filename)
+
 
 if args.dividends:
     fields=collections.defaultdict(dict)
