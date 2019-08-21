@@ -174,7 +174,7 @@ if filename == '':
 
 try:
     with open(filename, "w+") as outfile:
-        otufile.write(csv)
+        outfile.write(csv)
 except IOError:
     print("Oops.  Unable to write file to ", filename)
 
