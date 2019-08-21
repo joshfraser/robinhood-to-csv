@@ -22,6 +22,8 @@ parser.add_argument(
     '--mfa_code', help='your Robinhood mfa_code')
 parser.add_argument(
     '--profit', action='store_true', help='calculate profit for each sale')
+parser.add_argument(
+    '--dividends', action='store_true', help='export dividend payments')
 args = parser.parse_args()
 username = args.username
 password = args.password
@@ -170,12 +172,91 @@ filename = input().strip()
 if filename == '':
     filename = "robinhood.csv"
 
-# save the CSV
-try:
-    with open(filename, "w+") as outfile:
-        outfile.write(csv)
-except IOError:
-    print("Oops.  Unable to write file to ", filename)
+
+if args.dividends:
+    fields=collections.defaultdict(dict)
+    dividend_count = 0
+    queued_dividends = 0
+
+    # fetch order history and related metadata from the Robinhood API
+    dividends = robinhood.get_endpoint('dividends')
+
+
+    paginated = True
+    page = 0
+    while paginated:
+        for i, dividend in enumerate(dividends['results']):
+            symbol = cached_instruments.get(dividend['instrument'], False)
+            if not symbol:
+                symbol = robinhood.get_custom_endpoint(dividend['instrument'])['symbol']
+                cached_instruments[dividend['instrument']] = symbol
+
+            fields[i + (page * 100)]['symbol'] = symbol
+
+            for key, value in enumerate(dividend):
+                if value != "executions":
+                    fields[i + (page * 100)][value] = dividend[value]
+
+            fields[i + (page * 100)]['execution_state'] = order['state']
+
+            if dividend['state'] == "pending":
+                queued_dividends += 1
+            elif dividend['state'] == "paid":
+                dividend_count += 1
+        # paginate
+        if dividends['next'] is not None:
+            page = page + 1
+            orders = robinhood.get_custom_endpoint(str(dividends['next']))
+        else:
+            paginated = False
+
+    # for i in fields:
+    # 	print fields[i]
+    # 	print "-------"
+
+    # check we have trade data to export
+    if dividend_count > 0 or queued_dividends > 0:
+        print("%d queued dividend%s and %d executed dividend%s found in your account." %
+              (queued_dividends, "s" [queued_count == 1:], dividend_count,
+               "s" [trade_count == 1:]))
+        # print str(queued_count) + " queded trade(s) and " + str(trade_count) + " executed trade(s) found in your account."
+    else:
+        print("No dividend history found in your account.")
+        quit()
+
+    # CSV headers
+    keys = fields[0].keys()
+    keys = sorted(keys)
+    csv = ','.join(keys) + "\n"
+
+    # CSV rows
+    for row in fields:
+        for idx, key in enumerate(keys):
+            if (idx > 0):
+                csv += ","
+            try:
+                csv += str(fields[row][key])
+            except:
+                csv += ""
+
+        csv += "\n"
+
+    # choose a filename to save to
+    print("Choose a filename or press enter to save to `dividends.csv`:")
+    try:
+        input = raw_input
+    except NameError:
+        pass
+    filename = input().strip()
+    if filename == '':
+        filename = "dividends.csv"
+
+    # save the CSV
+    try:
+        with open(filename, "w+") as outfile:
+            outfile.write(csv)
+    except IOError:
+        print("Oops.  Unable to write file to ", filename)
 
 if args.profit:
     profit_csv = profit_extractor(csv, filename)
