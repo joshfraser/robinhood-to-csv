@@ -7,6 +7,7 @@ import argparse
 import ast
 from dotenv import load_dotenv, find_dotenv
 import os
+import datetime
 
 logged_in = False
 
@@ -24,10 +25,26 @@ parser.add_argument(
     '--profit', action='store_true', help='calculate profit for each sale')
 parser.add_argument(
     '--dividends', action='store_true', help='export dividend payments')
+parser.add_argument(
+    '--start_date', default='', help='The start date of transactions logged    Format:  YYYY-MM-DD')
+parser.add_argument(
+    '--end_date', default='', help='The end date of transactions logged    Format:  YYYY-MM-DD')
 args = parser.parse_args()
 username = args.username
 password = args.password
 mfa_code = args.mfa_code
+start_date = None
+end_date = None
+if args.start_date != "":
+    try:
+        start_date = datetime.datetime.strptime(args.start_date+"00:00:00.000000", "%Y-%m-%d%H:%M:%S.%f")
+    except ValueError:
+        print("Given start date " + args.start_date + " does not fit format YYYY-MM-DD")
+if args.end_date != "":
+    try:
+        end_date = datetime.datetime.strptime(args.end_date+"23:59:59.999999", "%Y-%m-%d%H:%M:%S.%f")
+    except ValueError:
+        print("Given end date " + args.end_date + " does not fit format YYYY-MM-DD")
 
 load_dotenv(find_dotenv())
 
@@ -118,12 +135,9 @@ while paginated:
         fields[i + (page * 100)]['execution_state'] = order['state']
 
         if len(executions) > 0:
-            trade_count += 1
             fields[i + (page * 100)]['execution_state'] = ("completed", "partially filled")[order['cumulative_quantity'] < order['quantity']]
             fields[i + (page * 100)]['first_execution_at'] = executions[0]['timestamp']
             fields[i + (page * 100)]['settlement_date'] = executions[0]['settlement_date']
-        elif order['state'] == "queued":
-            queued_count += 1
     # paginate
     if orders['next'] is not None:
         page = page + 1
@@ -135,6 +149,39 @@ while paginated:
 # 	print fields[i]
 # 	print "-------"
 
+
+
+# CSV headers
+keys = fields[0].keys()
+keys = sorted(keys)
+csv = ','.join(keys) + "\n"
+
+# CSV rows
+for row in fields:
+    #Check if date is compliant with filters
+    date_object = datetime.datetime.strptime(fields[row]['created_at'], "%Y-%m-%dT%H:%M:%S.%fZ")
+    filtered = False
+    if start_date != None:
+        if start_date > date_object:
+            filtered = True
+    if end_date != None:
+        if end_date < date_object:
+            filtered = True
+    if not filtered:
+        if fields[row]['execution_state'] in ['completed', 'partially filled']:
+            trade_count += 1
+        elif fields[row]['state'] == "queued":
+            queued_count += 1
+        for idx, key in enumerate(keys):
+            if (idx > 0):
+                csv += ","
+            try:
+                csv += str(fields[row][key])
+            except:
+                csv += ""
+
+        csv += "\n"
+
 # check we have trade data to export
 if trade_count > 0 or queued_count > 0:
     print("%d queued trade%s and %d executed trade%s found in your account." %
@@ -145,22 +192,6 @@ else:
     print("No trade history found in your account.")
     quit()
 
-# CSV headers
-keys = fields[0].keys()
-keys = sorted(keys)
-csv = ','.join(keys) + "\n"
-
-# CSV rows
-for row in fields:
-    for idx, key in enumerate(keys):
-        if (idx > 0):
-            csv += ","
-        try:
-            csv += str(fields[row][key])
-        except:
-            csv += ""
-
-    csv += "\n"
 
 # choose a filename to save to
 print("Choose a filename or press enter to save to `robinhood.csv`:")
@@ -204,11 +235,6 @@ if args.dividends:
                     fields[i + (page * 100)][value] = dividend[value]
 
             fields[i + (page * 100)]['execution_state'] = order['state']
-
-            if dividend['state'] == "pending":
-                queued_dividends += 1
-            elif dividend['state'] == "paid":
-                dividend_count += 1
         # paginate
         if dividends['next'] is not None:
             page = page + 1
@@ -220,6 +246,39 @@ if args.dividends:
     # 	print fields[i]
     # 	print "-------"
 
+
+
+    # CSV headers
+    keys = fields[0].keys()
+    keys = sorted(keys)
+    csv = ','.join(keys) + "\n"
+
+    # CSV rows
+    for row in fields:
+        #Check if date is compliant with filters
+        date_object = datetime.datetime.strptime(fields[row]['payable_date']+"12", "%Y-%m-%d%H")
+        filtered = False
+        if start_date != None:
+            if start_date > date_object:
+                filtered = True
+        if end_date != None:
+            if end_date < date_object:
+                filtered = True
+        if not filtered:
+            if fields[row]['state'] == "paid":
+                dividend_count += 1
+            elif fields[row]['state'] == "pending":
+                queued_dividends += 1
+            for idx, key in enumerate(keys):
+                if (idx > 0):
+                    csv += ","
+                try:
+                    csv += str(fields[row][key])
+                except:
+                    csv += ""
+
+            csv += "\n"
+
     # check we have trade data to export
     if dividend_count > 0 or queued_dividends > 0:
         print("%d queued dividend%s and %d executed dividend%s found in your account." %
@@ -229,23 +288,6 @@ if args.dividends:
     else:
         print("No dividend history found in your account.")
         quit()
-
-    # CSV headers
-    keys = fields[0].keys()
-    keys = sorted(keys)
-    csv = ','.join(keys) + "\n"
-
-    # CSV rows
-    for row in fields:
-        for idx, key in enumerate(keys):
-            if (idx > 0):
-                csv += ","
-            try:
-                csv += str(fields[row][key])
-            except:
-                csv += ""
-
-        csv += "\n"
 
     # choose a filename to save to
     print("Choose a filename or press enter to save to `dividends.csv`:")
