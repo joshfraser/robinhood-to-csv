@@ -99,6 +99,7 @@ def profit_extractor(csv_val,  filename):
             ws_count_temp = ws_count
             for q, p in buy_list:
                 total_buy += float(q)*float(p)
+                q = int(q)
                 for i in range(0, q):
                     if ws_count_temp > 0:
                         amount = p-float(row.average_price)
