@@ -1,5 +1,6 @@
 from __future__ import print_function
 from Robinhood import Robinhood
+from login_data import collect_login_data
 from profit_extractor import profit_extractor
 import getpass
 import collections
@@ -21,6 +22,8 @@ parser.add_argument(
 parser.add_argument(
     '--mfa_code', help='your Robinhood mfa_code')
 parser.add_argument(
+    '--device_token', help='your device token')
+parser.add_argument(
     '--profit', action='store_true', help='calculate profit for each sale')
 parser.add_argument(
     '--dividends', action='store_true', help='export dividend payments')
@@ -28,47 +31,14 @@ args = parser.parse_args()
 username = args.username
 password = args.password
 mfa_code = args.mfa_code
+device_token = args.device_token
 
 load_dotenv(find_dotenv())
 
 robinhood = Robinhood()
 
 # login to Robinhood
-while logged_in != True:
-
-    if username == "":
-        username = os.getenv("RH_USERNAME", "")
-    if username == "":
-        print("Robinhood username:", end=' ')
-        try:
-            input = raw_input
-        except NameError:
-            pass
-        username = input()
-
-    if password == "":
-        password = os.getenv("RH_PASSWORD", "")
-    if password == "":
-        password = getpass.getpass()
-
-    logged_in = robinhood.login(username=username, password=password)
-    if logged_in != True and logged_in.get('non_field_errors') == None and logged_in.get('mfa_required') == True:
-
-        if mfa_code is None:
-            mfa_code = os.getenv("RH_MFA")
-
-        if mfa_code == "":
-            print("Robinhood MFA:", end=' ')
-            try:
-                input = raw_input
-            except NameError:
-                pass
-            mfa_code = input()
-        logged_in = robinhood.login(username=username, password=password, mfa_code=mfa_code)
-
-    if logged_in != True:
-        password = ""
-        print("Invalid username or password.  Try again.\n")
+logged_in = collect_login_data(robinhood_obj=robinhood, username=username, password=password, device_token=device_token, mfa_code=mfa_code)
 
 print("Pulling trades. Please wait...")
 
@@ -132,8 +102,8 @@ while paginated:
         paginated = False
 
 # for i in fields:
-# 	print fields[i]
-# 	print "-------"
+#   print fields[i]
+#   print "-------"
 
 # check we have trade data to export
 if trade_count > 0 or queued_count > 0:
@@ -217,8 +187,8 @@ if args.dividends:
             paginated = False
 
     # for i in fields:
-    # 	print fields[i]
-    # 	print "-------"
+    #   print fields[i]
+    #   print "-------"
 
     # check we have trade data to export
     if dividend_count > 0 or queued_dividends > 0:
