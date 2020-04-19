@@ -66,24 +66,27 @@ class Robinhood:
         }
         self.session.headers = self.headers
 
-    def login(self, username, password, mfa_code=None):
+    def login(self, username, password, device_token ,mfa_code=None):
         self.username = username
         self.password = password
         self.mfa_code = mfa_code
+        self.device_token = device_token
         if mfa_code:
             fields = {
                 'password' : self.password,
                 'username' : self.username,
                 'mfa_code': self.mfa_code,
                 'grant_type': 'password',
-                'client_id': self.client_id
+                'client_id': self.client_id,
+                'device_token': self.device_token
             }
         else: 
             fields = {
                 'password' : self.password,
                 'username' : self.username,
                 'grant_type': 'password',
-                'client_id': self.client_id
+                'client_id': self.client_id,
+                'device_token':self.device_token
             }
         try:
             data = urllib.urlencode(fields) #py2

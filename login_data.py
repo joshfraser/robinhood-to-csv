@@ -3,8 +3,14 @@ from Robinhood import Robinhood
 import getpass
 import collections
 import os
-
+import sys
 #robinhood = Robinhood()
+def get_input():
+    if sys.version_info[0] < 3:
+        return raw_input()
+    else:
+        return input()
+
 
 def collect_login_data(robinhood_obj, username, password, device_token, mfa_code):
     logged_in = False
@@ -13,11 +19,7 @@ def collect_login_data(robinhood_obj, username, password, device_token, mfa_code
             username = os.getenv("RH_USERNAME", "")
         if username == "":
             print("Robinhood username:", end=' ')
-            try:
-                input = raw_input
-            except NameError:
-                pass
-            username = input()
+            username = get_input()
 
         if password == "":
             password = os.getenv("RH_PASSWORD", "")
@@ -29,11 +31,7 @@ def collect_login_data(robinhood_obj, username, password, device_token, mfa_code
             print("device token: ", device_token)
         if device_token == "":
             print("Robinhood device token:", end=' ')
-            try:
-                input = raw_input
-            except NameError:
-                pass
-            device_token = input()
+            device_token = get_input()
 
         logged_in = robinhood_obj.login(username=username, password=password, device_token=device_token)
 
@@ -42,11 +40,7 @@ def collect_login_data(robinhood_obj, username, password, device_token, mfa_code
                 mfa_code = os.getenv("RH_MFA")
             if mfa_code == None:
                 print("Robinhood MFA:", end=' ')
-                try:
-                    input = raw_input
-                except NameError:
-                    pass
-                mfa_code = input()
+                mfa_code = get_input()
             logged_in = robinhood_obj.login(username=username, password=password, device_token=device_token, mfa_code=mfa_code)
 
         if logged_in != True:
