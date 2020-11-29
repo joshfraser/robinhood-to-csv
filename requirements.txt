@@ -1,3 +1,4 @@
 requests
 pandas>=0.17.0
 python-dotenv>=0.8.2
+uuid
