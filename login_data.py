@@ -4,6 +4,7 @@ import getpass
 import collections
 import os
 import sys
+import uuid
 #robinhood = Robinhood()
 def get_input():
     if sys.version_info[0] < 3:
@@ -30,8 +31,8 @@ def collect_login_data(robinhood_obj, username, password, device_token, mfa_code
             device_token = os.getenv("RH_DEVICE_TOKEN", "")
             print("device token: ", device_token)
         if device_token == "":
-            print("Robinhood device token:", end=' ')
-            device_token = get_input()
+            device_token = uuid.uuid1()
+            print("Generated device token:", device_token)
 
         logged_in = robinhood_obj.login(username=username, password=password, device_token=device_token)
 
