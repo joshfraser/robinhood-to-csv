@@ -101,6 +101,11 @@ class Robinhood:
         self.headers['Authorization'] = 'Bearer ' + self.auth_token
         return True
 
+    def use_token(self, access_token):
+        self.auth_token = access_token
+        self.headers['Authorization'] = 'Bearer ' + self.auth_token
+        return True
+
     ##############################
     #GET DATA 
     ##############################
