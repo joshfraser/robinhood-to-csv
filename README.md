@@ -17,6 +17,11 @@ For exporting options trades, run:
 
 `python csv-options-export.py`
 
+You will be prompted to enter your 'username', which is your login email, your password, and optionally, your MFA.
+
+You can also provide these as arguments:
+`python csv-options-export.py --username example@gmail.com  --password password123! --device_token 744e17eb-2e2d-48e9-b46f-0f2521v17376`
+
 
 For Device_Token go to your browser
 
