@@ -126,7 +126,10 @@ for row in fields:
         if (idx > 0):
             csv += ","
         try:
-            csv += str(fields[row][key])
+            if key == 'executed_notional' or key == 'last_trail_price' or key == 'dollar_based_amount' or key == 'total_notional':
+                csv += "\""+str(fields[row][key])+"\""
+            else:
+                csv += str(fields[row][key])
         except:
             csv += ""
 
